@@ -184,7 +184,9 @@ func (mon *SocketMonitor) listen(r io.Reader, events chan<- Event, stream chan<-
 
 		// If data does not have an event type, it must be in response to a command.
 		if e.Event == "" {
-			stream <- streamResponse{buf: b}
+			// The scanner reuses b for the next line, so the response gets a
+			// copy of its own (coreos/coreos-assembler#4611).
+			stream <- streamResponse{buf: append([]byte(nil), b...)}
 			continue
 		}
 
